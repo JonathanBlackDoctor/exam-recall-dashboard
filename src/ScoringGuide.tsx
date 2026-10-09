@@ -1,0 +1,35 @@
+import { useEffect, useRef } from 'react';
+
+export function ScoringGuide({close}:{close:()=>void}) {
+  const dialog=useRef<HTMLDialogElement>(null);
+  useEffect(()=>{const d=dialog.current!,opener=document.querySelector<HTMLButtonElement>('.scoring-button')??document.activeElement;d.showModal();return()=>{d.close();if(opener instanceof HTMLElement&&opener.isConnected)opener.focus({preventScroll:true});};},[]);
+  return <dialog ref={dialog} className="scoring-dialog" aria-labelledby="scoring-title" onCancel={e=>{e.preventDefault();close();}}>
+    <header><h2 id="scoring-title">복기 점수 기준</h2><button className="icon-button" onClick={close} aria-label="점수 기준 닫기">×</button></header>
+    <div className="scoring-content">
+      <table className="scoring-table"><thead><tr><th scope="col">제공한 내용</th><th scope="col">문항당 배점</th></tr></thead><tbody>
+        <tr><th scope="row">본인의 실제 문제 내용 복기</th><td><strong>1.2점</strong></td></tr>
+        <tr><th scope="row">실제 복기에서 필수 요소 누락이 확인됨<sup>¹</sup></th><td><strong>1.1점</strong></td></tr>
+        <tr><th scope="row">기출 이미지만 제공 또는 내용을 확인할 수 없는 첨부</th><td><strong>1.0점</strong></td></tr>
+        <tr><th scope="row">“같습니다” 또는 “이전 기출에 있었습니다”라고만 확인</th><td><strong>0.9점</strong></td></tr>
+        <tr><th scope="row">다른 사람의 복기 보충 또는 답만 제공</th><td><strong>0.1점</strong></td></tr>
+      </tbody></table>
+      <p className="scoring-note">¹ <strong>문제의 대상·상황 없음, 물음 없음, 필수 그림·표·영상과 이를 대신할 설명 모두 없음</strong> 중 하나 이상이 확인된 경우입니다. 여러 사유가 있어도 1.1점이며, 불명확하다는 이유로 감점하지 않습니다. 글의 길이·보기 개수·정답·해설 유무는 감점 기준이 아닙니다.</p>
+      <h3>총점 계산</h3><ul>
+        <li>본복기 중 배점이 높은 <strong>최대 2문항</strong>은 위 배점 그대로, 나머지는 <strong>문항당 0.3점</strong>을 적용합니다.</li>
+        <li>별도 문항의 보충·답만 제공은 <strong>문항당 0.1점</strong>을 더합니다.</li>
+        <li>같은 사람이 같은 문제에 올린 글·첨부는 합쳐서 <strong>최고 배점 한 번만</strong> 인정합니다.</li>
+      </ul>
+      <p className="scoring-example">예: 실제 복기 3문항 + 다른 문항 보충 1건<br/>→ 1.2 + 1.2 + 0.3 + 0.1 = <strong>2.8점</strong></p>
+      <details className="scoring-definitions"><summary>용어 정의와 판정 방법</summary>
+        <dl>
+          <dt>실제 문제 내용 복기</dt><dd>본인이 응시한 문항의 지문·물음·보기·구체적인 변경 내용 등을 제공한 경우. 동일 확인만, 답만, 독립된 사진만 제공한 경우에는 각각 별도 배점을 적용합니다.</dd>
+          <dt>문제의 대상·상황</dt><dd>질환·개념·약물·검사·현상·자료 또는 사례의 상황·조건을 나타내는 내용입니다. 질문 자체에 포함되어 있어도 인정합니다.</dd>
+          <dt>물음</dt><dd>무엇을 선택·설명·답해야 하는지 나타내는 내용입니다. “진단?”, “원인은?”, “옳은 것은?”처럼 짧은 표현도 인정합니다.</dd>
+          <dt>필수 시각 자료</dt><dd>문제에 답하기 위해 필요한 그림·표·영상입니다. 실제 자료 또는 이를 대신하는 관찰 특징·수치·표 내용을 제공하면 누락으로 처리하지 않습니다.</dd>
+        </dl>
+        <h3>판정 방법</h3><p>같은 사람이 같은 문항에 올린 글·첨부를 함께 검토합니다. 필수 요소가 없음을 원문 근거로 확인한 경우에만 감점하며, 읽지 못했거나 연결을 확인하지 못한 경우는 ‘불명’으로 구분하여 그 이유로 감점하지 않습니다.</p>
+        <p className="scoring-principle">정해진 누락 조건이 확인되는지를 기준으로 판단합니다.</p>
+      </details>
+    </div><footer><button className="primary" onClick={close}>확인</button></footer>
+  </dialog>;
+}

@@ -4,6 +4,7 @@ import { decryptData } from './crypto.ts';
 import type { Envelope } from './crypto.ts';
 import { cellKey, defaultSubjects, formatValue, heatColor, metrics, metricValue, selectedExams, validateData } from './model.ts';
 import type { DashboardData, MetricId, Cell, Person } from './model.ts';
+import { ScoringGuide } from './ScoringGuide.tsx';
 import './style.css';
 
 function Mark() { return <span className="brand-mark" aria-hidden="true"><i/><i/><i/><i/></span>; }
@@ -33,6 +34,7 @@ function App() {
 function Dashboard({data,lock}:{data:DashboardData;lock:()=>void}) {
   const [subjects,setSubjects]=useState(()=>defaultSubjects(data)), [metric,setMetric]=useState<MetricId>('total'), [view,setView]=useState<'table'|'detail'>('table'), [picker,setPicker]=useState(false);
   const [personId,setPersonId]=useState(data.people[0].id), [examId,setExamId]=useState(data.exams[0].id);
+  const [scoring,setScoring]=useState(false);
   const exams=useMemo(()=>selectedExams(data,subjects),[data,subjects]);
   const index=useMemo(()=>new Map(data.cells.map(c=>[cellKey(c.personId,c.examId),c])),[data]);
   const active=metrics.find(m=>m.id===metric)!;
@@ -45,7 +47,7 @@ function Dashboard({data,lock}:{data:DashboardData;lock:()=>void}) {
     <header className="app-header"><div className="brand"><Mark/><div><h1>복기 기록</h1><span className="brand-sub">시험별 기여 비교</span></div></div><button className="lock-button" onClick={lock}><LockIcon/>잠그기</button></header>
     {data.meta.demo&&<div className="demo-banner">화면 검증용 가상 데이터입니다.</div>}
     <main className="workspace"><div className="workspace-top"><div><h2>{view==='table'?'시험별 비교':'기여 요약'}</h2><p className="scope-text">현재 본1 출석번호순 <span>·</span> {data.people.length}명 <span>·</span> {exams.length}개 시험</p></div>
-      <div className="view-switch" aria-label="표시 방식"><button aria-pressed={view==='table'} onClick={()=>setView('table')}>표</button><button aria-pressed={view==='detail'} onClick={()=>setView('detail')}>상세</button></div></div>
+      <div className="workspace-actions"><button className="scoring-button" onClick={()=>setScoring(true)} aria-haspopup="dialog"><span aria-hidden="true">ⓘ</span> 점수 기준</button><div className="view-switch" aria-label="표시 방식"><button aria-pressed={view==='table'} onClick={()=>setView('table')}>표</button><button aria-pressed={view==='detail'} onClick={()=>setView('detail')}>상세</button></div></div></div>
     <section className="data-panel"><div className="toolbar"><button className="subject-button" onClick={()=>setPicker(true)} aria-haspopup="dialog"><span>과목 선택</span><b>{subjects.length}</b><span aria-hidden="true">⌄</span></button>
       <div className="metric-field"><label htmlFor="metric">표시 척도</label><select id="metric" value={metric} onChange={e=>setMetric(e.target.value as MetricId)}>{metrics.map(m=><option key={m.id} value={m.id}>{m.label}</option>)}</select></div><span className="toolbar-hint">{view==='table'?'칸을 누르면 기여 요약이 열립니다.':'기본 · 초과 · 보충 구성'}</span></div>
       {exams.length===0?<div className="empty"><h3>선택된 과목이 없습니다.</h3><button className="primary" onClick={()=>setPicker(true)}>과목 선택하기</button></div>:view==='table'?<>
@@ -57,7 +59,7 @@ function Dashboard({data,lock}:{data:DashboardData;lock:()=>void}) {
         <div className="legend-bar"><div className="legend"><span>{active.label}</span>{legendValues.map(v=><span className="legend-entry" key={v}><i style={heatColor(v,active.pivot)}/>{formatValue(v,active.count)}</span>)}<span className="legend-more">이상도 같은 기준</span></div><span className="missing-key"><i/>미응시</span></div></>:<div className="detail-area"><div className="detail-controls"><label>사람<select value={person.id} onChange={e=>setPersonId(e.target.value)}>{data.people.map(p=><option key={p.id} value={p.id}>{p.attendance??'명단 외'} · {p.name}</option>)}</select></label><label>시험<select value={detailExam.id} onChange={e=>setExamId(e.target.value)}>{exams.map(e=><option key={e.id} value={e.id}>{e.name}</option>)}</select></label></div>
           <Summary cell={index.get(cellKey(person.id,detailExam.id))!} metric={metric}/></div>}
     </section><footer className="data-footer"><span>같은 값은 모든 시험에서 같은 색으로 표시합니다. 미응시는 0점과 구분합니다.</span><details><summary>척도 안내</summary><p>본복기 문항 수는 기본과 초과 문항 수의 합입니다. 기본 점수는 상위 두 문항, 초과 복기는 나머지 본복기, 보충은 별도 보충 기여입니다. 색상은 의무 이행 여부를 판정하지 않습니다.</p></details><div className="version"><span>검증 {new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(data.meta.verifiedAt))}</span><span>{data.meta.ruleVersion} · {data.meta.dataVersion.slice(0,8)}</span></div></footer>
-    </main>{picker&&<SubjectPicker data={data} selected={subjects} close={()=>setPicker(false)} apply={value=>{setSubjects(value);setPicker(false);}}/>}</div>;
+    </main>{picker&&<SubjectPicker data={data} selected={subjects} close={()=>setPicker(false)} apply={value=>{setSubjects(value);setPicker(false);}}/>}{scoring&&<ScoringGuide close={()=>setScoring(false)}/>}</div>;
 }
 function Summary({cell,metric}:{cell:Cell;metric:MetricId}) {
   if (cell.missing) return <div className="missing-summary"><span className="status-badge">미응시</span><h3>이 시험의 점수가 없습니다.</h3><p>응시자 명단에 포함되지 않아 결측으로 표시합니다.</p></div>;
