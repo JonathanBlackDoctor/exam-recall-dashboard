@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.private/
+.env
+.env.*
+*.log
+*.jsonl
+*.xlsx
+*.dpapi

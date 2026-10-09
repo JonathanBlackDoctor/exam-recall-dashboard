@@ -1,2 +1,29 @@
-# exam-recall-dashboard
-Password-protected exam recall contribution dashboard. Only encrypted result data is published.
+# 복기 기록
+
+출석번호순으로 시험별 복기 기여를 비교하는 웹앱. 본1 메이저 과목을 기본으로 열고 과목·척도를 선택할 수 있습니다. 상세 화면은 사람·시험별 기본/초과/보충 요약을 제공합니다.
+
+## 개발 및 검증
+
+Node 24 이상과 pnpm 11.25.0을 사용합니다.
+
+```sh
+pnpm install --frozen-lockfile
+pnpm test
+pnpm build
+node scripts/audit-public.mjs
+pnpm dev
+```
+
+## 데이터 갱신
+
+이 저장소에는 원문·실명 평문·비밀번호를 넣지 않습니다. 원본 분석 작업 폴더의 `web` 하위에서 `scripts/build-data.mjs`를 실행합니다. 변환기는 검증 보고서의 점수 파일·원본 해시, 응시명단 독립 검증, 완전한 사람×시험 조합과 정수 점수 구성을 확인합니다. 점수를 다시 계산하지 않으며 필요한 요약 필드만 가져옵니다.
+
+공유 비밀번호를 명령 인수나 환경 변수에 기록하지 말고 표준입력으로 전달합니다. 기본 출력은 `public/data.enc.json`입니다. 갱신마다 새 salt와 IV로 암호화합니다. 로컬 감사 기록과 Windows 사용자 계정으로 보호한 DPAPI 자격정보는 Git 제외 경로 `.private/`에 둡니다. 로컬의 `비밀번호 확인.cmd`로 접속 비밀번호를 확인할 수 있습니다.
+
+배포 전 `node scripts/build-data.mjs --audit`로 실제 이름이 빌드 결과에 포함되지 않았는지도 확인합니다. 데이터 변경 없이 재배포할 때에는 기존 암호문을 재사용할 수 있습니다.
+
+## 배포와 접근
+
+`main` 변경을 GitHub Actions가 검사·빌드한 뒤 GitHub Pages로 배포합니다. GitHub Pages 설정의 Source는 GitHub Actions입니다. 서버나 분석 서비스로 복호화 결과를 전송하지 않으며 비밀번호·복호화 결과를 브라우저 저장소에 보관하지 않습니다. 잠그기 또는 새로고침 시 다시 입력합니다.
+
+AES-256-GCM, PBKDF2-SHA-256 600,000회를 사용합니다. 공개 암호문은 오프라인 추측이 가능하므로 짧은 숫자 비밀번호는 접근 보호가 약합니다. 공유 비밀번호 방식은 개인별 권한이나 접속 기록을 제공하지 않습니다. 원본·이미지·문항별 근거·누적 점수·평균·순위는 포함하지 않습니다.

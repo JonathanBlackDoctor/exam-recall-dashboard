@@ -1,0 +1,5 @@
+import type { DashboardData, Cell } from '../src/model.ts';
+export function fixture(): DashboardData {
+  const cell=(personId:string,examId:string,missing=false):Cell=>({personId,examId,missing,participation:missing?'미응시':'응시',total:missing?null:27,base:missing?null:24,extra:missing?null:3,aux:missing?null:0,baseCount:missing?null:2,extraCount:missing?null:1,auxCount:missing?null:0,provisional:false,lower:missing?null:27,upper:missing?null:27});
+  return {schemaVersion:1,meta:{dataVersion:'a'.repeat(64),verifiedAt:'2026-10-09T20:08:16+09:00',ruleVersion:'scoring-v1.3',resultHash:'b'.repeat(64),sourceHash:'c'.repeat(64)},people:[{id:'p1',name:'가상 학생 A',attendance:1},{id:'p2',name:'가상 학생 B',attendance:null}],subjects:[{id:'s1',name:'소화기',family:'소화기',stage:'본1',group:'메이저'},{id:'s2',name:'기초 실습',family:'실습',stage:'예2',group:'마이너'}],exams:[{id:'e1',subjectId:'s1',name:'소화기 1차',session:'1차',order:2},{id:'e2',subjectId:'s2',name:'기초 실습 기말',session:'기말고사',order:1}],cells:[cell('p1','e1'),cell('p1','e2'),cell('p2','e1',true),cell('p2','e2')]};
+}
