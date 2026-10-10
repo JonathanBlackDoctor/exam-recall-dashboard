@@ -31,10 +31,10 @@ export function formatValue(value: number | null, count = false) {
   return value === null ? '—' : count ? String(value) : value.toFixed(1);
 }
 export function heatColor(value: number | null, pivot: number) {
-  if (value === null) return {backgroundColor:'#f0f2f1', color:'#657169'};
-  if (value === 0) return {backgroundColor:'#f1f3f2', color:'#5d6b62'};
+  if (value === null) return {backgroundColor:'#e5eaf2', color:'#53627a'};
+  if (value === 0) return {backgroundColor:'#f4f6fa', color:'#647189'};
   const strength = value / (value + pivot);
-  const start = [231, 245, 239], end = [5, 80, 66];
+  const start = [236, 243, 255], end = [30, 64, 175];
   const rgb = start.map((v,i) => Math.round(v + (end[i]-v)*strength));
   const luminance=rgb.map(v=>v/255).map(v=>v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4).reduce((sum,v,i)=>sum+v*[0.2126,0.7152,0.0722][i],0);
   return {backgroundColor:`rgb(${rgb.join(',')})`, color:luminance < 0.179 ? '#fff' : '#000'};
